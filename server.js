@@ -10,7 +10,9 @@ dotenv.config()
 
 connectDB()
 const port = process.env.port
-
+if(!process.env.ACCESS_TOKEN_SECRET || !process.env.CONNECTION_STRING){
+    throw new Error ("ACCESS_TOKEN_SECRET or CONNECTION_STRING is missing")
+}
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use("/api/contacts", contactRoutes)

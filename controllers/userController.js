@@ -9,7 +9,17 @@ const registerUser = expressAsyncHandler(async (req, res) => {
         res.status(400)
         throw new Error("All fields are required");
     }
-    const userAvailable = await User.findOne({email})
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+    if(!emailRegex.test(email)) {
+        res.status(400)
+        throw new Error("Email address is not valid");
+    }
+    if(password.length < 8) {
+        res.status(400)
+        throw new Error("Password must be at least 8 characters");
+    }
+    const normalizedEmail = email.toLowerCase().trim()
+    const userAvailable = await User.findOne({normalizedEmail})
     if(userAvailable){
         res.status(400)
         throw new Error("User already exists");
@@ -31,7 +41,7 @@ const loginUser = expressAsyncHandler(async (req, res) => {
         res.status(400)
         throw new Error("All fields are required");
     }
-    const user = await User.findOne({email})
+    const user = await User.findOne({email}).select("+password");
     if(user && (await bcrypt.compare(password, user.password))){
         const accessToken = jwt.sign({
             user:{
